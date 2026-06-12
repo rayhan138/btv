@@ -1,0 +1,13 @@
+{
+  "name": "btv-hd-live",
+  "version": "1.0.0",
+  "description": "BTV HD Live - Bangladesh Television",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

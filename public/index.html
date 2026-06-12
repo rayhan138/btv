@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a0f0d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Watch BTV HD Bangladesh Television live on your phone">
+    <link rel="manifest" href="/manifest.json">
+    <title>BTV HD Live</title>
+
+    <!-- HLS.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── RESET & BASE ─────────────────────────────── */
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        :root {
+            --bg-deep:    #050a08;
+            --bg-surface: #0d1a14;
+            --bg-card:    #111f18;
+            --green:      #00c853;
+            --green-dim:  #006a4e;
+            --red:        #f42a41;
+            --gold:       #ffd54f;
+            --text:       #e8f5e9;
+            --text-dim:   #7a9988;
+            --glass:      rgba(13, 26, 20, 0.85);
+            --radius:     16px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ── APP SHELL ────────────────────────────────── */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        /* ── HEADER ───────────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, var(--bg-surface) 0%, #0a1610 100%);
+            border-bottom: 1px solid rgba(0, 200, 83, 0.15);
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dim) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            color: white;
+            letter-spacing: -0.5px;
+            box-shadow: 0 0 20px rgba(0, 200, 83, 0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            background: linear-gradient(90deg, var(--text), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text span {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(244, 42, 65, 0.15);
+            border: 1px solid rgba(244, 42, 65, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--red);
+            letter-spacing: 1px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--red);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(244, 42, 65, 0.6); }
+            50%      { opacity: 0.6; box-shadow: 0 0 0 8px rgba(244, 42, 65, 0); }
+        }
+
+        /* ── PLAYER AREA ──────────────────────────────── */
+        .player-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #000;
+            min-height: 0;
+        }
+
+        .video-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* ── LOADING OVERLAY ──────────────────────────── */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 50;
+            transition: opacity 0.4s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(0, 200, 83, 0.15);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        /* ── ERROR OVERLAY ────────────────────────────── */
+        .error-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 51;
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .error-overlay.hidden {
+            display: none;
+        }
+
+        .error-icon {
+            font-size: 40px;
+        }
+
+        .error-msg {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .retry-btn {
+            margin-top: 8px;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dim) 100%);
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .retry-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ── CHANNEL SELECTOR ─────────────────────────── */
+        .channel-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-deep) 100%);
+            border-top: 1px solid rgba(0, 200, 83, 0.1);
+            overflow-x: auto;
+            flex-shrink: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .channel-btn {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(0, 200, 83, 0.15);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .channel-btn:active {
+            transform: scale(0.96);
+        }
+
+        .channel-btn.active {
+            background: linear-gradient(135deg, rgba(0, 200, 83, 0.15), rgba(0, 106, 78, 0.2));
+            border-color: var(--green);
+            color: var(--green);
+            box-shadow: 0 0 20px rgba(0, 200, 83, 0.15);
+        }
+
+        .channel-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* ── STATUS BAR ───────────────────────────────── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--bg-deep);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .status-bar .status-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            transition: background 0.3s;
+        }
+
+        .status-indicator.connected {
+            background: var(--green);
+            box-shadow: 0 0 8px rgba(0, 200, 83, 0.5);
+        }
+
+        .status-indicator.error {
+            background: var(--red);
+        }
+
+        .fullscreen-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            color: var(--text);
+        }
+
+        /* ── PWA INSTALL PROMPT ───────────────────────── */
+        .install-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(0, 106, 78, 0.3), rgba(0, 200, 83, 0.1));
+            border-bottom: 1px solid rgba(0, 200, 83, 0.2);
+            flex-shrink: 0;
+        }
+
+        .install-bar.show {
+            display: flex;
+        }
+
+        .install-text {
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .install-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 16px;
+            background: var(--green);
+            color: #000;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .install-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+
+        /* ── SAFE AREA (notch) ────────────────────────── */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .header {
+                padding-top: calc(10px + env(safe-area-inset-top));
+            }
+            .status-bar {
+                padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- PWA Install Bar -->
+    <div class="install-bar" id="installBar">
+        <span class="install-text">📲 Install BTV HD on your phone</span>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button class="install-btn" id="installBtn">Install</button>
+            <button class="install-dismiss" id="installDismiss">✕</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">BTV</div>
+            <div class="brand-text">
+                <h1>BTV HD</h1>
+                <span>Bangladesh Television</span>
+            </div>
+        </div>
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            LIVE
+        </div>
+    </header>
+
+    <!-- Player -->
+    <div class="player-wrapper">
+        <div class="video-container" id="videoContainer">
+            <video id="video" autoplay playsinline controls></video>
+
+            <!-- Loading -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loadingText">Connecting to BTV HD...</div>
+            </div>
+
+            <!-- Error -->
+            <div class="error-overlay hidden" id="errorOverlay">
+                <div class="error-icon">📡</div>
+                <div class="error-msg" id="errorMsg">Unable to connect</div>
+                <button class="retry-btn" onclick="loadChannel(currentChannel)">Retry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Selector -->
+    <div class="channel-bar" id="channelBar">
+        <button class="channel-btn active" data-channel="btv" onclick="switchChannel('btv', this)">
+            <span class="channel-dot"></span> BTV HD
+        </button>
+        <button class="channel-btn" data-channel="btv-news" onclick="switchChannel('btv-news', this)">
+            <span class="channel-dot"></span> BTV News
+        </button>
+        <button class="channel-btn" data-channel="btv-chattogram" onclick="switchChannel('btv-chattogram', this)">
+            <span class="channel-dot"></span> BTV Chattogram
+        </button>
+        <button class="channel-btn" data-channel="sangsad-tv" onclick="switchChannel('sangsad-tv', this)">
+            <span class="channel-dot"></span> Sangsad TV
+        </button>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-indicator" id="statusDot"></div>
+            <span id="statusText">Initializing...</span>
+        </div>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+    </div>
+</div>
+
+<script>
+    // ── State ────────────────────────────────────────────
+    let currentChannel = 'btv';
+    let hls = null;
+
+    const video         = document.getElementById('video');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText   = document.getElementById('loadingText');
+    const errorOverlay  = document.getElementById('errorOverlay');
+    const errorMsg      = document.getElementById('errorMsg');
+    const statusDot     = document.getElementById('statusDot');
+    const statusText    = document.getElementById('statusText');
+
+    // ── Show/Hide helpers ────────────────────────────────
+    function showLoading(msg) {
+        loadingText.textContent = msg || 'Connecting...';
+        loadingOverlay.classList.remove('hidden');
+        errorOverlay.classList.add('hidden');
+    }
+
+    function hideLoading() {
+        loadingOverlay.classList.add('hidden');
+    }
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorOverlay.classList.remove('hidden');
+        loadingOverlay.classList.add('hidden');
+        setStatus('error', 'Disconnected');
+    }
+
+    function setStatus(state, text) {
+        statusDot.className = 'status-indicator ' + (state || '');
+        statusText.textContent = text || '';
+    }
+
+    // ── Load channel ─────────────────────────────────────
+    async function loadChannel(channel) {
+        currentChannel = channel;
+        showLoading(`Connecting to ${channelName(channel)}...`);
+        setStatus('', 'Fetching stream...');
+
+        // Destroy previous HLS instance
+        if (hls) {
+            hls.destroy();
+            hls = null;
+        }
+
+        try {
+            // Fetch signed stream URL from our backend
+            const res = await fetch(`/api/stream/${channel}`);
+            if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            const streamUrl = data.proxyUrl || data.directUrl;
+            setStatus('', 'Loading stream...');
+
+            // Play with HLS.js
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    startLevel: -1,          // auto quality
+                    capLevelToPlayerSize: true,
+                    enableWorker: true,
+                    lowLatencyMode: false
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    hideLoading();
+                    video.play().catch(() => {});
+                    setStatus('connected', 'Playing — ' + channelName(channel));
+                });
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.warn('[HLS Error]', data.type, data.details);
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                setStatus('error', 'Network issue — retrying...');
+                                setTimeout(() => hls.startLoad(), 3000);
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                setStatus('error', 'Media error — recovering...');
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                showError('Stream failed. Tap Retry.');
+                                break;
+                        }
+                    }
+                });
+
+                hls.on(Hls.Events.FRAG_LOADED, () => {
+                    hideLoading();
+                    setStatus('connected', 'Playing — ' + channelName(channel));
+                });
+
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari native HLS
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', () => {
+                    hideLoading();
+                    video.play();
+                    setStatus('connected', 'Playing — ' + channelName(channel));
+                }, { once: true });
+            } else {
+                showError('Your browser does not support HLS playback.');
+            }
+
+        } catch (err) {
+            console.error('[Load Error]', err);
+            showError(err.message || 'Failed to connect');
+        }
+    }
+
+    // ── Switch channel ───────────────────────────────────
+    function switchChannel(channel, btn) {
+        document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        loadChannel(channel);
+    }
+
+    // ── Channel display name ─────────────────────────────
+    function channelName(ch) {
+        const names = {
+            'btv': 'BTV HD',
+            'btv-news': 'BTV News',
+            'btv-chattogram': 'BTV Chattogram',
+            'sangsad-tv': 'Sangsad TV'
+        };
+        return names[ch] || ch;
+    }
+
+    // ── Fullscreen ───────────────────────────────────────
+    function toggleFullscreen() {
+        const el = document.getElementById('videoContainer');
+        if (!document.fullscreenElement) {
+            (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen).call(el);
+        } else {
+            (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
+        }
+    }
+
+    // ── PWA Install Prompt ───────────────────────────────
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installBar').classList.add('show');
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const result = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('installBar').classList.remove('show');
+    });
+
+    document.getElementById('installDismiss').addEventListener('click', () => {
+        document.getElementById('installBar').classList.remove('show');
+    });
+
+    // ── Service Worker ───────────────────────────────────
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    // ── Start ────────────────────────────────────────────
+    loadChannel('btv');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a0f0d">
+    <title>BTV HD Live</title>
+
+    <!-- HLS.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── RESET & BASE ─────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-deep:    #050a08;
+            --bg-surface: #0d1a14;
+            --bg-card:    #111f18;
+            --green:      #00c853;
+            --green-dim:  #006a4e;
+            --red:        #f42a41;
+            --text:       #e8f5e9;
+            --text-dim:   #7a9988;
+        }
+
+        html, body {
+            height: 100%; width: 100%;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        /* ── HEADER ───────────────────────────────────── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--bg-surface) 0%, #0a1610 100%);
+            border-bottom: 1px solid rgba(0,200,83,0.15);
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dim) 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 14px; color: white;
+            box-shadow: 0 0 20px rgba(0,200,83,0.3);
+        }
+
+        .brand-text h1 {
+            font-size: 20px; font-weight: 800;
+            background: linear-gradient(90deg, var(--text), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text span {
+            font-size: 10px; color: var(--text-dim);
+            font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
+        }
+
+        .live-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(244,42,65,0.15);
+            border: 1px solid rgba(244,42,65,0.3);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; color: var(--red);
+            letter-spacing: 1px;
+        }
+
+        .live-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--red);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(244,42,65,0.6); }
+            50% { opacity: 0.6; box-shadow: 0 0 0 8px rgba(244,42,65,0); }
+        }
+
+        /* ── PLAYER ───────────────────────────────────── */
+        .player-wrapper {
+            flex: 1;
+            position: relative;
+            background: #000;
+            min-height: 0;
+        }
+
+        video {
+            width: 100%; height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* ── LOADING ──────────────────────────────────── */
+        .loading-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.85);
+            z-index: 50;
+            transition: opacity 0.4s ease;
+        }
+
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(0,200,83,0.15);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 13px; color: var(--text-dim); font-weight: 500;
+        }
+
+        /* ── ERROR ────────────────────────────────────── */
+        .error-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9);
+            z-index: 51; gap: 12px; padding: 20px;
+        }
+
+        .error-overlay.hidden { display: none; }
+
+        .error-icon { font-size: 44px; }
+
+        .error-msg {
+            font-size: 14px; color: var(--text-dim);
+            text-align: center; line-height: 1.5;
+        }
+
+        .retry-btn {
+            margin-top: 8px;
+            padding: 12px 32px; border: none; border-radius: 24px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dim) 100%);
+            color: white; font-family: inherit;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+
+        .retry-btn:active { transform: scale(0.95); }
+
+        /* ── CHANNEL BAR ──────────────────────────────── */
+        .channel-bar {
+            display: flex; gap: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-deep) 100%);
+            border-top: 1px solid rgba(0,200,83,0.1);
+            overflow-x: auto; flex-shrink: 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .channel-btn {
+            flex-shrink: 0;
+            display: flex; align-items: center; gap: 8px;
+            padding: 11px 18px; border-radius: 12px;
+            border: 1.5px solid rgba(0,200,83,0.15);
+            background: var(--bg-card);
+            color: var(--text-dim);
+            font-family: inherit; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .channel-btn:active { transform: scale(0.96); }
+
+        .channel-btn.active {
+            background: linear-gradient(135deg, rgba(0,200,83,0.15), rgba(0,106,78,0.2));
+            border-color: var(--green); color: var(--green);
+            box-shadow: 0 0 20px rgba(0,200,83,0.15);
+        }
+
+        .ch-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%; background: currentColor;
+        }
+
+        /* ── STATUS BAR ───────────────────────────────── */
+        .status-bar {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 16px;
+            background: var(--bg-deep);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+
+        .status-bar .status-left {
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%; background: var(--text-dim);
+            transition: all 0.3s;
+        }
+
+        .status-dot.ok {
+            background: var(--green);
+            box-shadow: 0 0 8px rgba(0,200,83,0.5);
+        }
+
+        .status-dot.err { background: var(--red); }
+
+        .status-text { font-size: 11px; color: var(--text-dim); }
+
+        /* ── SAFE AREA ────────────────────────────────── */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .header { padding-top: calc(12px + env(safe-area-inset-top)); }
+            .status-bar { padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">BTV</div>
+            <div class="brand-text">
+                <h1>BTV HD</h1>
+                <span>Bangladesh Television</span>
+            </div>
+        </div>
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            LIVE
+        </div>
+    </header>
+
+    <!-- Player -->
+    <div class="player-wrapper">
+        <video id="video" autoplay playsinline controls></video>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">Connecting to BTV HD...</div>
+        </div>
+
+        <div class="error-overlay hidden" id="errorOverlay">
+            <div class="error-icon">📡</div>
+            <div class="error-msg" id="errorMsg">Unable to connect</div>
+            <button class="retry-btn" onclick="loadChannel(currentChannel)">Retry</button>
+        </div>
+    </div>
+
+    <!-- Channel Selector -->
+    <div class="channel-bar" id="channelBar">
+        <button class="channel-btn active" data-ch="btv" onclick="switchChannel('btv', this)">
+            <span class="ch-dot"></span> BTV HD
+        </button>
+        <button class="channel-btn" data-ch="btv-news" onclick="switchChannel('btv-news', this)">
+            <span class="ch-dot"></span> BTV News
+        </button>
+        <button class="channel-btn" data-ch="btv-chattogram" onclick="switchChannel('btv-chattogram', this)">
+            <span class="ch-dot"></span> BTV CTG
+        </button>
+        <button class="channel-btn" data-ch="sangsad-tv" onclick="switchChannel('sangsad-tv', this)">
+            <span class="ch-dot"></span> Sangsad TV
+        </button>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">Initializing...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Config ───────────────────────────────────────
+    const CHANNELS = {
+        'btv':             '355ba051-9a60-48aa-adcf-5a6c64da8c5c',
+        'btv-news':        'd96eb7f4-83c2-4472-9597-3568390a8ebf',
+        'btv-chattogram':  'a707f2dc-9704-413a-a67c-17c64a77c350',
+        'sangsad-tv':      '9ee3b4f9-fd0a-47c5-a135-2575c5691613'
+    };
+
+    const NAMES = {
+        'btv': 'BTV HD', 'btv-news': 'BTV News',
+        'btv-chattogram': 'BTV Chattogram', 'sangsad-tv': 'Sangsad TV'
+    };
+
+    const BTV_API   = 'https://www.btvlive.gov.bd/api/cfToken';
+    const STREAM_BASE = 'https://streams.btvlive.gov.bd/live';
+
+    // ── State ────────────────────────────────────────
+    let currentChannel = 'btv';
+    let hls = null;
+    let cachedToken = null;
+    let tokenTime   = 0;
+
+    const video     = document.getElementById('video');
+    const loadOvl   = document.getElementById('loadingOverlay');
+    const loadTxt   = document.getElementById('loadingText');
+    const errOvl    = document.getElementById('errorOverlay');
+    const errMsg    = document.getElementById('errorMsg');
+    const stDot     = document.getElementById('statusDot');
+    const stText    = document.getElementById('statusText');
+
+    // ── Helpers ──────────────────────────────────────
+    function showLoading(msg) {
+        loadTxt.textContent = msg || 'Connecting...';
+        loadOvl.classList.remove('hidden');
+        errOvl.classList.add('hidden');
+    }
+
+    function hideLoading() { loadOvl.classList.add('hidden'); }
+
+    function showError(msg) {
+        errMsg.textContent = msg;
+        errOvl.classList.remove('hidden');
+        loadOvl.classList.add('hidden');
+        setStatus('err', 'Disconnected');
+    }
+
+    function setStatus(state, text) {
+        stDot.className = 'status-dot ' + (state || '');
+        stText.textContent = text || '';
+    }
+
+    // ── Fetch CloudFront Token ───────────────────────
+    // Tries direct first (works in native WebView).
+    // Falls back to CORS proxy if blocked (e.g. AppsGeyser wrapper).
+    async function getToken() {
+        const now = Date.now();
+        if (cachedToken && (now - tokenTime) < 4 * 60 * 1000) {
+            return cachedToken;
+        }
+
+        let data = null;
+
+        // Attempt 1: Direct fetch (works in native Android WebView)
+        try {
+            const res = await fetch(BTV_API, {
+                headers: { 'Referer': 'https://www.btvlive.gov.bd/' }
+            });
+            if (res.ok) data = await res.json();
+        } catch(e) {
+            console.warn('Direct fetch failed, trying CORS proxy...', e.message);
+        }
+
+        // Attempt 2: CORS proxy fallback
+        if (!data) {
+            try {
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(BTV_API);
+                const res = await fetch(proxyUrl);
+                if (res.ok) data = await res.json();
+            } catch(e) {
+                console.warn('CORS proxy 1 failed, trying alternative...', e.message);
+            }
+        }
+
+        // Attempt 3: Alternative CORS proxy
+        if (!data) {
+            const proxyUrl2 = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(BTV_API);
+            const res = await fetch(proxyUrl2);
+            if (!res.ok) throw new Error('All token fetches failed');
+            data = await res.json();
+        }
+
+        if (!data || data.status !== 'success') {
+            throw new Error('Token error: ' + (data?.status || 'no response'));
+        }
+
+        cachedToken = data;
+        tokenTime   = now;
+        return data;
+    }
+
+    // ── Build Stream URL ─────────────────────────────
+    function buildUrl(token, channelId) {
+        const userId  = token.userId;
+        const country = token.country || 'BD';
+        const signed  = token.output; // "Policy=...&Signature=...&Key-Pair-Id=..."
+        return `${STREAM_BASE}/${userId}/${country}/${channelId}/index.m3u8?${signed}`;
+    }
+
+    // ── Load Channel ─────────────────────────────────
+    async function loadChannel(channel) {
+        currentChannel = channel;
+        showLoading('Connecting to ' + NAMES[channel] + '...');
+        setStatus('', 'Fetching token...');
+
+        if (hls) { hls.destroy(); hls = null; }
+
+        try {
+            // 1. Get signed token
+            const token = await getToken();
+            const channelId = CHANNELS[channel];
+            const streamUrl = buildUrl(token, channelId);
+            const signedQS  = token.output; // query string to append to all requests
+
+            setStatus('', 'Loading stream...');
+
+            // 2. Play with HLS.js
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    startLevel: -1,
+                    capLevelToPlayerSize: true,
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                    // Append CloudFront signed params to EVERY request
+                    xhrSetup: function(xhr, url) {
+                        if (url.includes('streams.btvlive.gov.bd') && !url.includes('Policy=')) {
+                            url += (url.includes('?') ? '&' : '?') + signedQS;
+                        }
+                        xhr.open('GET', url, true);
+                    }
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(video);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    hideLoading();
+                    video.play().catch(() => {});
+                    setStatus('ok', 'Playing — ' + NAMES[channel]);
+                });
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            setStatus('err', 'Network issue — retrying...');
+                            // Token might have expired, refresh it
+                            cachedToken = null;
+                            setTimeout(() => loadChannel(currentChannel), 3000);
+                        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                            setStatus('err', 'Recovering...');
+                            hls.recoverMediaError();
+                        } else {
+                            showError('Stream failed. Tap Retry.');
+                        }
+                    }
+                });
+
+                hls.on(Hls.Events.FRAG_LOADED, () => {
+                    hideLoading();
+                    setStatus('ok', 'Playing — ' + NAMES[channel]);
+                });
+
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Safari / native HLS
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', () => {
+                    hideLoading();
+                    video.play();
+                    setStatus('ok', 'Playing — ' + NAMES[channel]);
+                }, { once: true });
+            } else {
+                showError('HLS playback not supported.');
+            }
+
+        } catch (err) {
+            console.error('Load error:', err);
+            showError(err.message || 'Connection failed');
+        }
+    }
+
+    // ── Switch Channel ───────────────────────────────
+    function switchChannel(channel, btn) {
+        document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        loadChannel(channel);
+    }
+
+    // ── Auto token refresh every 4 min ───────────────
+    setInterval(() => { cachedToken = null; }, 4 * 60 * 1000);
+
+    // ── Start ────────────────────────────────────────
+    loadChannel('btv');
+</script>
+
+</body>
+</html>

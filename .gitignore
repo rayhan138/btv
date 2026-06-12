@@ -1,0 +1,18 @@
+# Node
+node_modules/
+package-lock.json
+
+# Android build outputs
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk
+
+# Test files
+test-*.mjs
+
+# IDE
+.idea/
+*.iml
+.vscode/
