@@ -38,11 +38,10 @@
         }
 
         html, body {
-            height: 100%;
+            min-height: 100%;
             font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg-deep);
             color: var(--text);
-            overflow: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -50,8 +49,8 @@
         .app {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
+            min-height: 100vh;
+            min-height: 100dvh;
         }
 
         /* ── HEADER ───────────────────────────────────── */
@@ -148,6 +147,7 @@
             align-items: center;
             justify-content: center;
             background: #000;
+            min-height: 0;
         }
 
         video {
