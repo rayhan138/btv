@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RAKIB TV PREMIUM</title>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#000;
+color:white;
+overflow:hidden;
+height:100vh;
+}
+
+/* HEADER */
+
+.header{
+position:sticky;
+top:0;
+z-index:10000;
+background:#000;
+padding:2px;
+text-align:center;
+border-top:1px solid red;
+border-bottom:1px solid red;
+}
+
+.header h1{
+font-size:24px;
+color:#ff1a1a;
+text-shadow:0 0 15px red;
+}
+
+/* PLAYER */
+
+.player-box{
+position:relative;
+width:100%;
+background:black;
+}
+
+video{
+width:100%;
+height:250px;
+background:black;
+object-fit:fill;
+}
+
+/* CONTROLS */
+
+.custom-controls{
+
+position:absolute;
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+display:flex;
+gap:15px;
+
+z-index:999;
+transition:.4s;
+
+}
+
+.control-btn{
+
+width:58px;
+height:58px;
+
+border:none;
+border-radius:50%;
+
+background:red;
+color:white;
+
+font-size:22px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+cursor:pointer;
+
+box-shadow:
+0 0 15px rgba(255,0,0,.6);
+
+}
+
+/* SEARCH */
+
+.search-box{
+padding:2px;
+}
+
+.search-box input{
+
+width:100%;
+padding:4px;
+
+font-size:12px;
+
+border:none;
+outline:none;
+
+border-radius:10px;
+
+background:#111;
+color:white;
+
+}
+
+/* CHANNEL GRID */
+
+.channel-grid{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+
+gap:12px;
+padding:12px;
+
+}
+
+/* CHANNEL */
+
+.channel{
+
+background:white;
+
+border-radius:20px;
+
+padding:4px;
+
+height:75px;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+cursor:pointer;
+
+border:2px solid #00cfff;
+
+box-shadow:
+0 0 12px rgba(0,207,255,.5);
+
+transition:.3s;
+
+}
+
+.channel:hover{
+transform:scale(1.03);
+}
+
+.channel img{
+
+width:75%;
+height:75%;
+object-fit:fill;
+
+}
+
+/* ACTIVE */
+
+.active{
+
+border:3px solid #00ff84 !important;
+
+box-shadow:
+0 0 18px #00ff84,
+0 0 28px rgba(0,255,132,.8);
+
+}
+
+/* LIVE COUNTER */
+
+.live-counter{
+
+position:fixed;
+
+left:15px;
+bottom:60px;
+
+z-index:99999;
+
+background:rgba(0,0,0,.80);
+
+padding:12px 16px;
+
+border-radius:18px;
+
+font-size:12px;
+font-weight:bold;
+
+color:white;
+
+backdrop-filter:blur(10px);
+
+box-shadow:
+0 0 14px rgba(0,255,100,.5);
+
+opacity:1;
+
+transition:.4s;
+
+}
+
+/* CONTACT */
+
+.contact-title{
+
+text-align:center;
+
+font-size:12px;
+font-weight:bold;
+
+margin-top:0px;
+margin-bottom:0px;
+
+color:white;
+
+text-shadow:
+0 0 10px red;
+
+}
+
+.social-box{
+
+display:flex;
+justify-content:center;
+gap:10px;
+
+padding-bottom:0px;
+
+}
+
+.social-box a{
+
+width:35px;
+height:35px;
+
+border-radius:50%;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-size:20px;
+
+text-decoration:none;
+color:white;
+
+}
+
+.telegram{
+background:#229ED9;
+}
+
+.facebook{
+background:#1877F2;
+}
+
+/* FOOTER */
+
+.footer{
+
+text-align:center;
+
+padding:2px;
+
+font-size:12px;
+font-weight:bold;
+
+border-top:2px solid red;
+
+}
+
+.footer span{
+color:red;
+}
+.player-box{
+position:relative;
+background:black;
+}
+
+.search-box{
+position:sticky;
+top:250px;
+z-index:9998;
+background:black;
+}
+
+.channel-grid{
+overflow-y:auto;
+overflow-x:hidden;
+height:calc(100vh - 430px);
+padding-bottom:20px;
+align-content:start;
+}
+
+/* GROUP TABS */
+.group-tabs{
+display:flex;
+overflow-x:auto;
+gap:6px;
+padding:6px;
+background:#000;
+position:sticky;
+top:286px;
+z-index:9997;
+}
+.group-tab{
+background:#111;
+color:white;
+border:1px solid #00cfff;
+border-radius:12px;
+padding:6px 10px;
+cursor:pointer;
+white-space:nowrap;
+}
+.group-tab.active-tab{
+background:#00cfff;
+color:black;
+font-weight:bold;
+}
+
+
+.fav-btn{
+position:absolute;
+top:2px;
+right:4px;
+font-size:18px;
+z-index:5;
+cursor:pointer;
+}
+.channel{
+position:relative;
+}
+
+#themeToggle{
+background:transparent !important;
+color:#ffcc33;
+border:none !important;
+border-radius:0 !important;
+padding:0 !important;
+margin:0 !important;
+cursor:pointer;
+box-shadow:none !important;
+font-size:18px;
+}
+body.darkmode .channel{
+background:#121212 !important;
+border-color:#333 !important;
+box-shadow:none !important;
+}
+body.darkmode .channel img{
+filter:brightness(.75) contrast(.95);
+}
+
+
+.channel-name{position:absolute;bottom:2px;left:0;right:0;font-size:10px;text-align:center;color:#fff;background:rgba(0,0,0,.6);border-radius:0 0 12px 12px;padding:1px;}
+#loadingSpinner{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;font-size:22px;background:rgba(0,0,0,.35);padding:4px 8px;border-radius:50%;}
+#topBtn{position:fixed;right:12px;bottom:28px;z-index:99999;display:none;width:30px;height:24px;border-radius:50%;border:none;background:#7a0000;color:white;font-size:12px;}
+
+
+/* DESKTOP VIEW IMPROVEMENT ONLY */
+@media (min-width: 900px){
+    video{
+        height:620px !important;
+    }
+
+    .channel-grid{
+        grid-template-columns:repeat(8,1fr) !important;
+        gap:14px !important;
+        height:calc(100vh - 760px) !important;
+        overflow-y:auto !important;
+        padding-bottom:180px !important;
+    }
+
+    .channel{
+        height:95px !important;
+    }
+
+    .channel-name{
+        font-size:11px !important;
+    }
+}
+
+
+.header-inner{
+position:relative;
+width:100%;
+height:36px;
+}
+
+.header h1{
+text-align:center;
+line-height:36px;
+margin:0;
+}
+
+#themeToggle{
+position:absolute !important;
+right:8px !important;
+top:50% !important;
+transform:translateY(-50%) !important;
+}
+
+#refreshBtn{
+position:absolute;
+left:8px;
+top:50%;
+transform:translateY(-50%);
+z-index:100001;
+width:34px;
+height:34px;
+background:#000;
+color:#ffcc33;
+border:1px solid #222;
+border-radius:50%;
+box-shadow:none;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:16px;
+cursor:pointer;
+}
+
+
+.notice-ticker{
+background:#111;
+color:#ffcc33;
+font-size:11px;
+font-weight:600;
+padding:4px 0;
+border-top:1px solid #222;
+border-bottom:1px solid #222;
+overflow:hidden;
+white-space:nowrap;
+text-align:left;
+}
+
+
+body.force-desktop video{height:620px!important;}
+body.force-desktop .channel-grid{grid-template-columns:repeat(8,1fr)!important;gap:14px!important;height:calc(100vh - 760px)!important;}
+body.force-desktop .channel{height:95px!important;}
+
+
+/* TV / DESKTOP FULLSCREEN LAYOUT */
+@media (min-width:900px){
+.player-box{
+position:fixed!important;
+left:0!important;
+top:40px!important;
+width:78vw!important;
+height:calc(100vh - 40px)!important;
+z-index:10!important;
+}
+video{
+width:100%!important;
+height:100%!important;
+object-fit:fill!important;
+}
+.notice-bar,.search-box,.group-tabs,.channel-grid{
+margin-left:78vw!important;
+width:22vw!important;
+}
+.channel-grid{
+display:block!important;
+height:calc(100vh - 130px)!important;
+overflow-y:auto!important;
+padding:8px!important;
+}
+.channel{
+width:100%!important;
+height:80px!important;
+margin-bottom:8px!important;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<div class="header">
+
+<div class="header-inner">
+<button id="refreshBtn" title="Refresh">
+  <i class="fas fa-rotate-right"></i>
+</button>
+<h1>RAKIB TV PREMIUM</h1>
+<button id="themeToggle" title="Dark Mode">🌙</button>
+</div>
+
+</div>
+
+<!-- LIVE COUNTER -->
+
+<div class="live-counter">
+
+🟢 Live Users :
+<span id="liveUsers">0</span>
+
+<br>
+
+👁 Total Views :
+<span id="totalViews">0</span>
+
+</div>
+
+<!-- PLAYER -->
+
+<div class="player-box">
+
+<video id="video"
+autoplay
+playsinline
+controls>
+
+</video>
+
+<!-- CONTROLS -->
+
+<div class="custom-controls">
+
+<button class="control-btn"
+onclick="prevChannel()">
+
+⏮
+
+</button>
+
+<button class="control-btn"
+onclick="togglePlay()">
+
+⏯
+
+</button>
+
+<button class="control-btn"
+onclick="nextChannel()">
+
+⏭
+
+</button>
+
+</div>
+
+</div>
+
+<!-- SEARCH -->
+
+
+
+<div class="notice-bar" style="display:flex;align-items:center;background:#0b0b0b;border-top:1px solid #222;border-bottom:1px solid #222;height:26px;overflow:hidden;">
+<div class="notice-label" style="background:#c62828;color:#fff;font-weight:600;padding:0 8px;height:26px;display:flex;align-items:center;flex-shrink:0;font-size:11px;">NOTICE</div>
+<div class="notice-scroll" style="flex:1;color:#ffd54a;font-size:11px;">
+<marquee scrollamount="3"> সর্বশেষ আপডেটঃ আমি ইতিমধ্যেই FIFA WORLD CUP ক্যাটাগরি আপডেট করে দিয়েছি, Tv Screen এর মধ্যে Up/Down করলে Brightness কমাতে/বাড়াতে পারবেন** যাদের Google Chrome থেকে চলতেছেনা তারা Playstore থেকে Via Browser App ডাউনলোড করে টিভি দেখুন** 😍আমার তৈরি করা RAKIB TV PREMIUM টেলিভিশন ওয়েবসাইট টি আপনাদের কাছে কেমন লেগেছে? যদি ভালো লেগে থাকে অবশ্যই আমাকে জানাবেন** চ্যানেলের একদম নিচে আমার Telegram লোগো দেওয়া আছে** সেখানে ক্লিক করে মতামত জানাতে ভুলবেন না** কোনো Update প্রয়োজন হলে অবশ্যই জানাবেন** যাদের মোবাইলে Google Chrome থেকে কিছু কিছু চ্যানেল Play হবেনা তারা play store থেকে Via Browser অ্যাপ ডাউনলোড করে ব্যবহার করুন তাহলে Play হবে** Mobile View এবং Desktop/Tv View আপডেট করে দেওয়া হয়েছে** এখন থেকে কম্পিউটার এবং টিভিতে ব্যবহার করা যাবে** Github এর আগের লিংক পরিবর্তন করে https://rakibtv.pages.dev/ এটাতে চ্যানেল Live করতেছি** সুতরাং যারা টিভি দেখেন তারা এই লিংকটি Save করে রেখে দিবেন** আর কোনো চ্যানেল Add করতে হলে আমাকে জানাতে ভুলবেন না।** </marquee>
+</div>
+</div>
+
+<div class="search-box">
+
+<input type="text"
+
+id="search"
+
+placeholder="Search Channel..."
+
+onkeyup="searchChannels()">
+
+</div>
+
+<div class="group-tabs" id="groupTabs"></div>
+
+<!-- CHANNELS -->
+
+<div class="channel-grid"
+id="channelGrid">
+
+</div>
+
+<script>
+
+/* PLAYLIST */
+
+const playlist =
+'https://raw.githubusercontent.com/Rakib49/Rakibiptv/refs/heads/main/aynaott.m3u';
+
+let channels = [];
+let filteredChannels = [];
+let currentIndex = 0;
+let currentGroup='All';
+let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+
+/* LOAD PLAYLIST */
+
+fetch(playlist)
+
+.then(r=>r.text())
+
+.then(data=>{
+
+const lines =
+data.split('\n');
+
+for(let i=0;i<lines.length;i++){
+
+if(lines[i].startsWith('#EXTINF')){
+
+const info = lines[i];
+const url = lines[i+1];
+const name = info.split(',')[1];
+
+let logo='';
+
+const match =
+info.match(/tvg-logo="(.*?)"/);
+
+if(match){logo=match[1];}
+let group='Other';
+const g=info.match(/group-title="(.*?)"/i);
+if(g){group=g[1];}
+
+channels.push({
+name,
+url,
+logo,
+group
+});
+
+}
+
+}
+
+buildTabs();
+filteredChannels = channels;
+renderChannels();
+
+if(channels.length>0){
+playChannel(0);
+}
+
+});
+
+/* RENDER */
+
+
+function normalizeGroup(g){
+g=(g||'').toLowerCase();
+if(['bangla','bangladesh','indian bangla','inbangla'].includes(g)) return 'Bangla';
+if(g.includes('world cup') || g.includes('fifa world cup')) return '🏆 FIFA World Cup';
+if(g.includes('sport')) return 'Sports';
+if(g.includes('news')) return 'News';
+if(g.includes('movie')) return 'Movies';
+if(g.includes('music')) return 'Music';
+if(g.includes('kid')) return 'Kids';
+if(['english','hindi','urdhu'].includes(g)) return 'International';
+if(['entertainment','drama'].includes(g)) return 'Entertainment';
+return 'Others';
+}
+
+function buildTabs(){
+const tabs=document.getElementById('groupTabs');
+const groups=['All','❤️ Favorites','Bangla','🏆 FIFA World Cup','Sports','News','Entertainment','Movies','Music','Kids','International','Others'];
+tabs.innerHTML=groups.map(g=>`<button class="group-tab ${g==='All'?'active-tab':''}" onclick="filterGroup('${g}',this)">${g}</button>`).join('');
+}
+
+function filterGroup(group,btn){
+currentGroup=group;
+document.querySelectorAll('.group-tab').forEach(x=>x.classList.remove('active-tab'));
+if(btn) btn.classList.add('active-tab');
+if(group==='All'){
+filteredChannels = channels;
+}else if(group==='❤️ Favorites'){
+filteredChannels = channels.filter(c=>favorites.includes(c.url));
+}else{
+filteredChannels = channels.filter(c=>normalizeGroup(c.group)===group);
+}
+renderChannels();document.getElementById('channelGrid').scrollTop=0;
+}
+
+function renderChannels(){
+
+const grid =
+document.getElementById('channelGrid');
+
+grid.innerHTML='';
+
+filteredChannels.forEach((ch,index)=>{
+
+const div =
+document.createElement('div');
+
+div.className='channel';
+
+const fav = favorites.includes(ch.url) ? '❤️' : '🤍';
+
+div.innerHTML=`
+<div class="fav-btn">${fav}</div>
+<img src="${ch.logo}"><div class="channel-name">${ch.name}</div>
+`;
+
+div.onclick=()=>playChannel(channels.indexOf(ch));
+
+
+const favBtn = div.querySelector('.fav-btn');
+
+favBtn.addEventListener('click', function(e){
+e.stopPropagation();
+
+if(favorites.includes(ch.url)){
+favorites = favorites.filter(x=>x!==ch.url);
+}else{
+favorites.push(ch.url);
+}
+
+localStorage.setItem('favorites',JSON.stringify(favorites));
+
+if(currentGroup==='❤️ Favorites'){
+filteredChannels = channels.filter(c=>favorites.includes(c.url));
+}
+
+renderChannels();
+});
+
+
+grid.appendChild(div);
+
+});
+
+const contact=document.createElement('div');
+contact.style.gridColumn='1/-1';
+contact.innerHTML=`
+<h2 class="contact-title">আমার টিভি সম্পর্কে মতামত জানাতে</h2>
+<div class="social-box">
+<a href="https://t.me/rprakib49" target="_blank" class="telegram"><i class="fab fa-telegram-plane"></i></a>
+<a href="https://www.facebook.com/rprakib49" target="_blank" class="facebook"><i class="fab fa-facebook-f"></i></a>
+</div>
+<div class="footer">© 2026 <span>RAKIB TV PREMIUM</span></div>
+`;
+grid.appendChild(contact);
+
+}
+
+
+function toggleFavorite(event,url){
+
+event.stopPropagation();
+
+if(favorites.includes(url)){
+favorites = favorites.filter(x=>x!==url);
+}else{
+favorites.push(url);
+}
+
+localStorage.setItem('favorites',JSON.stringify(favorites));
+
+if(currentGroup==='❤️ Favorites'){
+filteredChannels = channels.filter(c=>favorites.includes(c.url));
+}
+
+renderChannels();
+}
+
+/* PLAY */
+
+
+function playChannel(index){
+
+currentIndex=index;
+
+const video =
+document.getElementById('video');
+
+const channel =
+channels[index];
+
+if(Hls.isSupported()){
+
+const hls =
+new Hls();
+
+hls.loadSource(channel.url);
+
+hls.attachMedia(video);
+
+hls.on(
+Hls.Events.MANIFEST_PARSED,
+function(){
+
+video.play();
+
+});
+
+}
+
+else{
+
+video.src=channel.url;
+video.play();
+
+}
+
+document.querySelectorAll('.channel')
+.forEach(el=>{
+
+el.classList.remove('active');
+
+});
+
+const cards = document.querySelectorAll('.channel');
+
+cards.forEach((card,i)=>{
+    if(
+        filteredChannels[i] &&
+        filteredChannels[i].url === channel.url
+    ){
+        card.classList.add('active');
+
+        const rect = card.getBoundingClientRect();
+const topLimit = 320; // player + tabs area
+
+if(rect.top < topLimit || rect.bottom > window.innerHeight){
+    card.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest'
+    });
+}
+    }
+});
+
+}
+
+/* NEXT */
+
+function nextChannel(){
+
+currentIndex++;
+
+if(currentIndex>=channels.length){
+
+currentIndex=0;
+
+}
+
+playChannel(currentIndex);
+
+}
+
+/* PREV */
+
+function prevChannel(){
+
+currentIndex--;
+
+if(currentIndex<0){
+
+currentIndex=
+channels.length-1;
+
+}
+
+playChannel(currentIndex);
+
+}
+
+/* PLAY PAUSE */
+
+function togglePlay(){
+
+const video =
+document.getElementById('video');
+
+if(video.paused){
+
+video.play();
+
+}
+
+else{
+
+video.pause();
+
+}
+
+}
+
+/* SEARCH */
+
+function searchChannels(){
+
+const input =
+document.getElementById('search')
+.value.toLowerCase();
+
+const cards =
+document.querySelectorAll('.channel');
+
+filteredChannels.forEach((ch,index)=>{
+
+if(ch.name.toLowerCase()
+.includes(input)){
+
+cards[index]
+.style.display='flex';
+
+}
+
+else{
+
+cards[index]
+.style.display='none';
+
+}
+
+});
+
+}
+
+/* AUTO HIDE */
+
+const controls =
+document.querySelector('.custom-controls');
+
+const visitor =
+document.querySelector('.live-counter');
+
+function showUI(){
+
+controls.style.opacity='1';
+visitor.style.opacity='1';
+
+setTimeout(()=>{
+
+controls.style.opacity='0';
+visitor.style.opacity='0';
+
+},2000);
+
+}
+
+showUI();
+
+document.querySelector('.player-box')
+.addEventListener('click',()=>{
+
+showUI();
+
+});
+
+</script>
+
+<!-- FIREBASE -->
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+
+getDatabase,
+ref,
+set,
+get,
+onValue,
+onDisconnect,
+runTransaction
+
+}
+
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyA2L1dayNYWlDz6dKc3a_N0eoyDaLSlPj0",
+
+authDomain:
+"rakib-iptv.firebaseapp.com",
+
+databaseURL:
+"https://rakib-iptv-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+"rakib-iptv",
+
+storageBucket:
+"rakib-iptv.firebasestorage.app",
+
+messagingSenderId:
+"299021620847",
+
+appId:
+"1:299021620847:web:20e1cd003d9c6ced815f9a"
+
+};
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getDatabase(app);
+
+/* UNIQUE USER */
+
+const userId =
+Date.now() + "_" +
+Math.random().toString(36).substring(2,8);
+
+const userRef =
+ref(db,'liveUsers/'+userId);
+
+/* USER ONLINE */
+
+set(userRef,{
+online:true,
+time:Date.now()
+});
+
+/* AUTO REMOVE */
+
+onDisconnect(userRef).remove();
+
+/* LIVE USERS */
+
+onValue(ref(db,'liveUsers'),
+(snapshot)=>{
+
+const data =
+snapshot.val();
+
+const count =
+data ? Object.keys(data).length : 0;
+
+document.getElementById('liveUsers')
+.innerText = count;
+
+});
+
+/* TOTAL VIEWS */
+
+const totalRef =
+ref(db,'totalViews');
+
+/* COUNT VIEW - TRANSACTION */
+
+if(!localStorage.getItem('viewed')){
+
+runTransaction(totalRef,(current)=>{
+return (current || 0) + 1;
+}).then(()=>{
+localStorage.setItem('viewed','yes');
+});
+
+}
+
+/* SHOW TOTAL */
+
+onValue(totalRef,(snapshot)=>{
+
+const total =
+snapshot.val() || 0;
+
+document.getElementById('totalViews')
+.innerText = total;
+
+});
+
+</script>
+
+
+<script>
+(function(){
+const btn=document.getElementById('themeToggle');
+if(!btn) return;
+
+if(localStorage.getItem('darkmode')==='on'){
+ document.body.classList.add('darkmode');
+}
+
+btn.onclick=function(){
+ document.body.classList.toggle('darkmode');
+ localStorage.setItem('darkmode',
+ document.body.classList.contains('darkmode')?'on':'off');
+};
+})();
+</script>
+<button id="topBtn">↑</button>
+
+<script>
+
+const refreshBtn=document.getElementById('refreshBtn');
+if(refreshBtn){
+ refreshBtn.onclick=function(){
+   location.reload();
+ };
+}
+
+const topBtn=document.getElementById('topBtn');
+topBtn.onclick=function(){
+ const grid=document.getElementById('channelGrid');
+ if(grid){ grid.scrollTo({top:0,behavior:'smooth'}); }
+ window.scrollTo({top:0,behavior:'smooth'});
+ document.body.scrollTop=0;
+ document.documentElement.scrollTop=0;
+};
+function toggleTopButton(){
+ const grid=document.getElementById('channelGrid');
+ if(!grid) return;
+ const maxScroll=grid.scrollHeight-grid.clientHeight;
+ const trigger=maxScroll*0.65;
+ topBtn.style.display = grid.scrollTop > trigger ? 'block' : 'none';
+}
+const grid=document.getElementById('channelGrid');
+if(grid){
+ grid.addEventListener('scroll',toggleTopButton);
+ toggleTopButton();
+}
+</script>
+
+
+<script>
+(function(){
+const video=document.getElementById('video');
+if(!video) return;
+
+let startY=0;
+let startBrightness=1;
+let brightness=1;
+
+video.style.filter='brightness(1)';
+
+video.addEventListener('touchstart',function(e){
+ startY=e.touches[0].clientY;
+ startBrightness=brightness;
+},{passive:true});
+
+video.addEventListener('touchmove',function(e){
+ const delta=(startY-e.touches[0].clientY)/300;
+ brightness=Math.max(0.3,Math.min(2,startBrightness+delta));
+ video.style.filter='brightness('+brightness+')';
+},{passive:true});
+})();
+</script>
+
+
+<style>
+@media (min-width:900px){
+/* Right panel order: Search -> Categories -> Channels */
+.search-box{
+position:fixed !important;
+right:0 !important;
+top:40px !important;
+width:22vw !important;
+margin-left:0 !important;
+z-index:9999 !important;
+}
+
+.group-tabs{
+position:fixed !important;
+right:0 !important;
+top:78px !important;
+width:22vw !important;
+margin-left:0 !important;
+z-index:9998 !important;
+display:flex !important;
+overflow-x:auto !important;
+}
+
+.channel-grid{
+position:fixed !important;
+right:0 !important;
+top:122px !important;
+width:22vw !important;
+height:calc(100vh - 160px) !important;
+overflow-y:auto !important;
+margin-left:0 !important;
+}
+
+.notice-bar{
+left:0 !important;
+bottom:0 !important;
+width:100vw !important;
+}
+}
+</style>
+
+</body>
+</html>
+
+
+<!-- Desktop TV Notice Bottom Patch -->
+<style>
+@media (min-width:900px){
+.notice-bar{
+position:fixed !important;
+left:0 !important;
+bottom:0 !important;
+width:100vw !important;
+margin-left:0 !important;
+height:32px !important;
+z-index:99999 !important;
+}
+.notice-label{
+font-size:14px !important;
+}
+.notice-scroll{
+font-size:15px !important;
+font-weight:700 !important;
+}
+.player-box{
+height:calc(100vh - 72px) !important;
+}
+}
+</style>

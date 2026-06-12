@@ -55,7 +55,58 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36");
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (url.contains("streams.btvlive.gov.bd")) {
+                    try {
+                        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                        conn.setRequestMethod(request.getMethod());
+                        for (java.util.Map.Entry<String, String> header : request.getRequestHeaders().entrySet()) {
+                            conn.setRequestProperty(header.getKey(), header.getValue());
+                        }
+                        
+                        java.io.InputStream is = conn.getInputStream();
+                        
+                        java.util.Map<String, String> responseHeaders = new java.util.HashMap<>();
+                        for (java.util.Map.Entry<String, java.util.List<String>> header : conn.getHeaderFields().entrySet()) {
+                            if (header.getKey() != null) {
+                                String value = header.getValue().get(0);
+                                if (header.getKey().equalsIgnoreCase("access-control-allow-origin")) {
+                                    value = "*"; // Fix the invalid header
+                                }
+                                responseHeaders.put(header.getKey(), value);
+                            }
+                        }
+                        
+                        String contentType = conn.getContentType();
+                        String mimeType = "application/octet-stream";
+                        String encoding = "utf-8";
+                        if (contentType != null) {
+                            if (contentType.contains(";")) {
+                                String[] parts = contentType.split(";");
+                                mimeType = parts[0].trim();
+                                for (int i = 1; i < parts.length; i++) {
+                                    if (parts[i].trim().toLowerCase().startsWith("charset=")) {
+                                        encoding = parts[i].split("=")[1].trim();
+                                    }
+                                }
+                            } else {
+                                mimeType = contentType.trim();
+                            }
+                        }
+
+                        return new WebResourceResponse(mimeType, encoding, conn.getResponseCode(), conn.getResponseMessage(), responseHeaders, is);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+        });
+        
         webView.setWebChromeClient(new WebChromeClient());
         webView.setBackgroundColor(Color.BLACK);
 

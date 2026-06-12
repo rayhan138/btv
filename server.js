@@ -55,7 +55,7 @@ async function getCfToken() {
 // Full URL: https://streams.btvlive.gov.bd/live/{userId}/{country}/{channelId}/index.m3u8?{output}
 function buildStreamUrl(tokenData, channelId) {
     const userId  = tokenData.userId;
-    const country = tokenData.country || 'BD';
+    const country = 'BD'; // Force BD to avoid geo-blocks
     const signed  = tokenData.output;   // "Policy=...&Signature=...&Key-Pair-Id=..."
 
     const baseUrl = `${STREAM_BASE}/live/${userId}/${country}/${channelId}/index.m3u8`;
@@ -105,7 +105,11 @@ app.get('/api/hls/manifest', async (req, res) => {
         if (!url) return res.status(400).send('Missing url');
 
         const response = await fetch(url, { headers: BROWSER_HEADERS });
-        if (!response.ok) throw new Error(`Manifest HTTP ${response.status}`);
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`[HLS] Manifest proxy error: HTTP ${response.status} - ${errText}`);
+            throw new Error(`Manifest HTTP ${response.status}`);
+        }
 
         let content = await response.text();
 

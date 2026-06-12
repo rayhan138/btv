@@ -522,7 +522,7 @@
             const data = await res.json();
             if (data.error) throw new Error(data.error);
 
-            const streamUrl = data.directUrl;
+            const streamUrl = data.proxyUrl || data.directUrl;
             setStatus('', 'Loading stream...');
 
             // Play with HLS.js
